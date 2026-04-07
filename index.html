@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="A static personal data story of a walked Camino de Santiago from Sarria to Santiago de Compostela in April 2026."
+    >
+    <title>Camino de Santiago | Sarria to Santiago</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="hero" id="top">
+      <nav class="top-nav" aria-label="Main navigation">
+        <a href="#top" class="brand">Camino Santiago</a>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#photos">Photos</a>
+          <a href="#stages">Stages</a>
+          <a href="#analysis">Data</a>
+        </div>
+      </nav>
+
+    </header>
+
+    <main id="main">
+      <section class="section map-section overview-section" id="overview" aria-labelledby="map-title">
+        <div class="section-heading">
+          <p class="eyebrow">April 1-5, 2026</p>
+          <h1 id="map-title">Sarria to Santiago de Compostela</h1>
+          <p class="overview-lede">
+            The map comes first: one clean GPX line, the essential numbers, and
+            a Wikiloc link for the full public route. Photos and deeper analysis
+            follow below.
+          </p>
+        </div>
+
+        <div class="map-layout">
+          <div class="map-card">
+            <div class="map-toolbar">
+              <span>Clean GPX route overview</span>
+              <a href="https://es.wikiloc.com/rutas-senderismo/camino-de-santiago-sarria-santiago-de-compostela-apr-1-5-2026-258160444" target="_blank" rel="noopener noreferrer">View on Wikiloc</a>
+            </div>
+            <div id="routeFallback" class="route-fallback" aria-label="Clean route diagram from Sarria to Santiago"></div>
+          </div>
+
+          <aside class="route-notes overview-notes">
+            <p class="eyebrow">Numbers</p>
+            <div id="overviewStats" class="overview-stats"></div>
+            <p class="minimal-note">
+              Sarria to Santiago de Compostela, shown as one clean line first.
+              For a full external map with the public track, open the Wikiloc route.
+            </p>
+            <a class="button primary route-link" href="https://es.wikiloc.com/rutas-senderismo/camino-de-santiago-sarria-santiago-de-compostela-apr-1-5-2026-258160444" target="_blank" rel="noopener noreferrer">Open full route on Wikiloc</a>
+            <div id="legend" class="legend" aria-label="Stage color legend"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section photo-section" id="photos" aria-labelledby="photos-title">
+        <div class="section-heading compact-heading">
+          <div>
+            <p class="eyebrow">Photo showcase</p>
+            <h2 id="photos-title">Moments from the walk.</h2>
+          </div>
+          <p>
+            All 55 low-size web copies are loaded from <code>photos/web/</code>,
+            while the original photos stay untouched.
+          </p>
+        </div>
+        <div class="carousel-card">
+          <div id="photoCarousel" class="photo-carousel" aria-live="polite"></div>
+          <div class="carousel-controls">
+            <button type="button" id="prevPhoto" class="icon-button" aria-label="Previous photo">Previous</button>
+            <button type="button" id="nextPhoto" class="icon-button" aria-label="Next photo">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section stats-section" aria-labelledby="stats-title">
+        <div class="section-heading">
+          <p class="eyebrow">More numbers</p>
+          <h2 id="stats-title">The deeper totals.</h2>
+        </div>
+        <div id="statsGrid" class="stats-grid"></div>
+      </section>
+
+      <section class="section stages-section" id="stages" aria-labelledby="stages-title">
+        <div class="section-heading">
+          <p class="eyebrow">Five walking days</p>
+          <h2 id="stages-title">Stage by stage.</h2>
+        </div>
+        <div id="stageCards" class="stage-grid"></div>
+      </section>
+
+      <section class="section analysis-section" id="analysis" aria-labelledby="analysis-title">
+        <div class="section-heading">
+          <p class="eyebrow">Performance and terrain</p>
+          <h2 id="analysis-title">Where the data tells a second story.</h2>
+        </div>
+
+        <div class="analysis-grid">
+          <article class="chart-card">
+            <div class="card-heading">
+              <h3>Elevation profile</h3>
+              <p>Sampled every 500 m from the merged GPX.</p>
+            </div>
+            <div id="elevationChart" class="svg-chart" aria-label="Elevation profile chart"></div>
+          </article>
+
+          <article class="chart-card">
+            <div class="card-heading">
+              <h3>Pace signatures</h3>
+              <p>Clock minutes per kilometer, with long stops visible as spikes.</p>
+            </div>
+            <div id="paceChart" class="svg-chart" aria-label="Pace by kilometer chart"></div>
+          </article>
+        </div>
+
+        <div class="analysis-grid lower">
+          <article class="insight-card">
+            <h3>Hidden facts from the GPX</h3>
+            <ul id="hiddenFacts" class="fact-list"></ul>
+          </article>
+
+          <article class="insight-card">
+            <h3>Likely waits and rests</h3>
+            <div id="restEvents" class="rest-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section provenance-section" aria-labelledby="provenance-title">
+        <div class="provenance-card">
+          <p class="eyebrow">Data provenance</p>
+          <h2 id="provenance-title">Built from your Camino files.</h2>
+          <p id="provenanceText"></p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Buen Camino. Sarria to Santiago de Compostela, April 2026.</p>
+      <a href="#top">Back to top</a>
+    </footer>
+
+    <noscript>
+      <div class="noscript">
+        This page needs JavaScript to draw the map, charts, route analysis, and photo carousel.
+      </div>
+    </noscript>
+
+    <script src="assets/js/camino-data.js" defer></script>
+    <script src="assets/js/app.js" defer></script>
+  </body>
+</html>
