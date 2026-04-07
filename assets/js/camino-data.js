@@ -17060,7 +17060,7 @@ window.CAMINO_DATA = {
       "slowestKmMin": 29.1,
       "steps": 32703,
       "badge": "Least stopped day",
-      "color": "#d08a2d",
+      "color": "#C2703E",
       "story": "A late start from Sarria turned this into a pure walking stage: chestnut and oak paths, the medieval bridge of Áspera, Barbadelo, then a long descent to the Miño before the final staircase into Portomarín.",
       "night": "Portomarín",
       "gps": {
@@ -17090,7 +17090,7 @@ window.CAMINO_DATA = {
       "slowestKmMin": 79.1,
       "steps": 36113,
       "badge": "Hardest climbing day",
-      "color": "#b75f3a",
+      "color": "#8B6F47",
       "story": "The toughest ascent day: a climb out of Portomarín, rolling through Ligonde, past Lameiros, and up to Alto de Rosario, the high point of the whole route before the descent toward Palas de Rei.",
       "night": "Palas de Rei",
       "gps": {
@@ -17120,7 +17120,7 @@ window.CAMINO_DATA = {
       "slowestKmMin": 72.9,
       "steps": 39368,
       "badge": "Longest day and most steps",
-      "color": "#856a3f",
+      "color": "#5B7F5E",
       "story": "The longest day, rolling down through rural Galicia toward Melide, the pulpo stop, then onward to the medieval bridge and pilgrim hospital atmosphere of Ribadiso just as the light was fading.",
       "night": "Ribadiso da Baixo",
       "gps": {
@@ -17150,7 +17150,7 @@ window.CAMINO_DATA = {
       "slowestKmMin": 65.0,
       "steps": 35603,
       "badge": "Adaptation day",
-      "color": "#5e8549",
+      "color": "#4A7082",
       "story": "A smoother transition stage through Arzúa, Santa Irene, and the eucalyptus corridor. The pace improved here: the legs were adapting and the final night before Santiago was close.",
       "night": "O Pedrouzo (Arca)",
       "gps": {
@@ -17180,7 +17180,7 @@ window.CAMINO_DATA = {
       "slowestKmMin": 52.0,
       "steps": 30396,
       "badge": "Fastest finish",
-      "color": "#4b78a8",
+      "color": "#7B5C8A",
       "story": "The final push carried the best pace of the Camino: Guillermo Watt, O Empalme, the last forests, Monte do Gozo, and then the descent into Santiago and Praza do Obradoiro.",
       "night": "Santiago de Compostela",
       "gps": {

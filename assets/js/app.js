@@ -60,6 +60,7 @@
   ];
 
   let currentPhoto = 0;
+  let selectedProfileStage = null;
 
   const $ = (selector) => document.querySelector(selector);
   const fmt = (value) => new Intl.NumberFormat("en-US").format(value);
@@ -213,70 +214,225 @@
     if (mapCard) mapCard.classList.add("clean-map-active");
   }
 
-  function groupByStage(points) {
-    return points.reduce((acc, point) => {
-      const stage = point[4];
+  function renderRouteFallback() {
+    const target = $("#routeFallback");
+    const profile = data.elevationProfile;
+    if (!target || !profile?.length) return;
+
+    const width = 980;
+    const height = 470;
+    const pad = { top: 54, right: 40, bottom: 64, left: 72 };
+    const maxKm = Math.ceil(Math.max(...profile.map((point) => point[0])));
+    const minEle = Math.floor((Math.min(...profile.map((point) => point[1])) - 25) / 50) * 50;
+    const maxEle = Math.ceil((Math.max(...profile.map((point) => point[1])) + 25) / 50) * 50;
+    const chartBottom = height - pad.bottom;
+    const chartWidth = width - pad.left - pad.right;
+    const chartHeight = height - pad.top - pad.bottom;
+    const x = (km) => pad.left + (km / maxKm) * chartWidth;
+    const y = (ele) => pad.top + ((maxEle - ele) / (maxEle - minEle)) * chartHeight;
+    const byStage = groupProfileByStage(profile);
+
+    const grid = makeRange(Math.ceil(minEle / 100) * 100, maxEle, 100)
+      .map(
+        (ele) => `
+          <g>
+            <line x1="${pad.left}" x2="${width - pad.right}" y1="${y(ele).toFixed(1)}" y2="${y(ele).toFixed(1)}" stroke="rgba(47,38,28,0.1)" stroke-dasharray="3 9"/>
+            <text x="${pad.left - 12}" y="${(y(ele) + 4).toFixed(1)}" text-anchor="end" class="axis-label">${ele} m</text>
+          </g>
+        `
+      )
+      .join("");
+
+    const kmTicks = [0, 25, 50, 75, 100, 125]
+      .filter((km) => km <= maxKm)
+      .map(
+        (km) => `
+          <g>
+            <line x1="${x(km).toFixed(1)}" x2="${x(km).toFixed(1)}" y1="${pad.top}" y2="${chartBottom}" stroke="rgba(47,38,28,0.08)"/>
+            <text x="${x(km).toFixed(1)}" y="${height - 27}" text-anchor="middle" class="axis-label">${km} km</text>
+          </g>
+        `
+      )
+      .join("");
+
+    const stageAreas = data.stages
+      .map((stage) => {
+        const points = byStage[stage.day] || [];
+        if (points.length < 2) return "";
+        const dim = selectedProfileStage && selectedProfileStage !== stage.day;
+        const first = points[0];
+        const last = points[points.length - 1];
+        const linePath = points
+          .map((point, index) => `${index ? "L" : "M"} ${x(point[0]).toFixed(1)} ${y(point[1]).toFixed(1)}`)
+          .join(" ");
+        const areaPath = [
+          `M ${x(first[0]).toFixed(1)} ${chartBottom}`,
+          `L ${x(first[0]).toFixed(1)} ${y(first[1]).toFixed(1)}`,
+          points
+            .slice(1)
+            .map((point) => `L ${x(point[0]).toFixed(1)} ${y(point[1]).toFixed(1)}`)
+            .join(" "),
+          `L ${x(last[0]).toFixed(1)} ${chartBottom}`,
+          "Z",
+        ].join(" ");
+
+        return `
+          <path d="${areaPath}" fill="${stage.color}" opacity="${dim ? "0.05" : "0.18"}"/>
+          <path d="${linePath}" fill="none" stroke="${stage.color}" stroke-width="${dim ? "4" : "7"}" stroke-linecap="round" stroke-linejoin="round" opacity="${dim ? "0.22" : "1"}"/>
+        `;
+      })
+      .join("");
+
+    const poiMarkers = data.waypoints
+      .filter((waypoint) => ["Start", "Sleep", "Summit", "Food", "Viewpoint", "Finish"].includes(waypoint.type))
+      .map((waypoint, index) => renderPoiMarker(waypoint, index, x, y))
+      .join("");
+
+    const restMarkers = data.restEvents
+      .filter((event) => event.durationMin >= 30)
+      .map((event) => renderRestMarker(event, x, y))
+      .join("");
+
+    target.innerHTML = `
+      <div class="profile-map-header">
+        <div>
+          <p class="eyebrow">Journey profile map</p>
+          <h2>Five days, one rising and falling line.</h2>
+        </div>
+        <p>Colored by walking day. Tap a stage below to isolate it; tap again to reset.</p>
+      </div>
+      <svg class="fallback-svg profile-map-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Elevation journey map from Sarria to Santiago">
+        <defs>
+          <linearGradient id="profileSky" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0%" stop-color="#fff9ec"/>
+            <stop offset="54%" stop-color="#f6e6c5"/>
+            <stop offset="100%" stop-color="#e7c996"/>
+          </linearGradient>
+          <filter id="profileShadow" x="-10%" y="-10%" width="120%" height="140%">
+            <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#6f431a" flood-opacity="0.18"/>
+          </filter>
+        </defs>
+        <rect x="0" y="0" width="${width}" height="${height}" rx="34" fill="url(#profileSky)"/>
+        <text x="${pad.left}" y="34" class="profile-map-title">Sarria to Santiago de Compostela</text>
+        <text x="${width - pad.right}" y="34" text-anchor="end" class="profile-map-note">${data.summary.narrativeDistanceKm.toFixed(1)} km - ${fmt(data.summary.steps)} steps</text>
+        ${grid}
+        ${kmTicks}
+        <rect x="${pad.left}" y="${pad.top}" width="${chartWidth}" height="${chartHeight}" rx="22" fill="rgba(255,249,236,0.34)" stroke="rgba(47,38,28,0.1)"/>
+        <g filter="url(#profileShadow)">
+          ${stageAreas}
+        </g>
+        ${restMarkers}
+        ${poiMarkers}
+        <line x1="${pad.left}" x2="${width - pad.right}" y1="${chartBottom}" y2="${chartBottom}" stroke="rgba(47,38,28,0.28)" stroke-width="2"/>
+        <text x="${pad.left}" y="${height - 8}" class="profile-map-note">Terrain profile from GPX samples - rest triangles show likely long pauses.</text>
+      </svg>
+      <div class="profile-stage-cards" aria-label="Highlight one Camino stage">
+        ${data.stages.map(renderProfileStageCard).join("")}
+      </div>
+    `;
+
+    (target.querySelectorAll?.(".profile-stage-card") || []).forEach((button) => {
+      button.addEventListener("click", () => {
+        const stage = Number(button.dataset.stage);
+        selectedProfileStage = selectedProfileStage === stage ? null : stage;
+        renderRouteFallback();
+      });
+    });
+  }
+
+  function groupProfileByStage(profile) {
+    return profile.reduce((acc, point) => {
+      const stage = point[2];
       acc[stage] ||= [];
       acc[stage].push(point);
       return acc;
     }, {});
   }
 
-  function renderRouteFallback() {
-    const bounds = data.route.bounds;
-    const width = 900;
-    const height = 540;
-    const pad = 56;
-    const lonSpan = bounds.east - bounds.west;
-    const latSpan = bounds.north - bounds.south;
-    const project = (point) => {
-      const x = pad + ((point[1] - bounds.west) / lonSpan) * (width - pad * 2);
-      const y = pad + ((bounds.north - point[0]) / latSpan) * (height - pad * 2);
-      return [x.toFixed(1), y.toFixed(1)];
-    };
+  function makeRange(start, end, step) {
+    const range = [];
+    for (let value = start; value <= end; value += step) range.push(value);
+    return range;
+  }
 
-    const stageLines = Object.entries(groupByStage(data.route.points))
-      .map(([stage, points]) => {
-        const coords = points.map((point) => project(point).join(",")).join(" ");
-        return `<polyline points="${coords}" fill="none" stroke="${stageColor(Number(stage))}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`;
-      })
-      .join("");
+  function nearestProfilePoint(km) {
+    return data.elevationProfile.reduce((nearest, point) =>
+      Math.abs(point[0] - km) < Math.abs(nearest[0] - km) ? point : nearest
+    );
+  }
 
-    const start = project(data.route.points[0]);
-    const finish = project(data.route.points[data.route.points.length - 1]);
-    const stops = data.waypoints
-      .filter((waypoint) => ["Start", "Sleep", "Finish", "Summit"].includes(waypoint.type))
-      .map((waypoint) => {
-        const [x, y] = project([waypoint.lat, waypoint.lon]);
-        const label = waypoint.type === "Sleep" ? waypoint.name.replace("NIGHT ", "Night ") : waypoint.name;
-        const fill = waypoint.type === "Finish" ? "#436f95" : waypoint.type === "Start" ? "#597642" : waypoint.type === "Summit" ? "#b76034" : "#fff9ec";
-        return `
-          <g>
-            <circle cx="${x}" cy="${y}" r="8" fill="${fill}" stroke="#2f261c" stroke-width="2"/>
-            <text x="${Number(x) + 12}" y="${Number(y) - 10}" class="map-label">${escapeHtml(label)}</text>
-          </g>
-        `;
-      })
-      .join("");
+  function stageForKm(km) {
+    let cumulativeKm = 0;
+    for (const stage of data.stages) {
+      cumulativeKm += stage.distanceKm;
+      if (km <= cumulativeKm + 0.75) return stage.day;
+    }
+    return data.stages[data.stages.length - 1].day;
+  }
 
-    $("#routeFallback").innerHTML = `
-      <svg class="fallback-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Static fallback route line from Sarria to Santiago">
-        <defs>
-          <radialGradient id="mapGlow" cx="68%" cy="28%" r="70%">
-            <stop offset="0%" stop-color="#f4d6a6"/>
-            <stop offset="100%" stop-color="#fff9ec"/>
-          </radialGradient>
-        </defs>
-        <rect x="0" y="0" width="${width}" height="${height}" rx="34" fill="url(#mapGlow)"/>
-        <path d="M ${pad} ${height - pad} C ${width * 0.25} ${height * 0.08}, ${width * 0.76} ${height * 0.96}, ${width - pad} ${pad}" fill="none" stroke="rgba(47,38,28,0.07)" stroke-width="30" stroke-linecap="round"/>
-        ${stageLines}
-        ${stops}
-        <circle cx="${start[0]}" cy="${start[1]}" r="10" fill="#597642" stroke="#2f261c" stroke-width="2"/>
-        <circle cx="${finish[0]}" cy="${finish[1]}" r="10" fill="#436f95" stroke="#2f261c" stroke-width="2"/>
-        <text x="${Number(start[0]) + 16}" y="${Number(start[1]) + 5}" class="axis-label">Sarria</text>
-        <text x="${Number(finish[0]) - 112}" y="${Number(finish[1]) - 12}" class="axis-label">Santiago</text>
-        <text x="${pad}" y="${height - 24}" class="chart-note">${data.summary.narrativeDistanceKm.toFixed(1)} km · 5 days · ${fmt(data.summary.gpsPoints)} GPS points</text>
-      </svg>
+  function cleanPoiLabel(waypoint) {
+    return waypoint.name
+      .replace(/^NIGHT \d - /, "")
+      .replace("SANTIAGO DE COMPOSTELA - ", "")
+      .replace(" - Start (Km 0)", "")
+      .replace(" - 679m (ROUTE HIGH POINT)", "")
+      .replace(" - Pulpería Ezequiel", "")
+      .replace(" (Arca)", "");
+  }
+
+  function renderPoiMarker(waypoint, index, x, y) {
+    const profilePoint = nearestProfilePoint(waypoint.routeKm);
+    const markerStage = stageForKm(waypoint.routeKm);
+    const px = x(waypoint.routeKm);
+    const py = y(waypoint.type === "Summit" ? data.summary.highestPoint.elevationM : profilePoint[1]);
+    const dim = selectedProfileStage && selectedProfileStage !== markerStage;
+    const labelAbove = index % 2 === 0 || waypoint.type === "Summit" || waypoint.type === "Finish";
+    const labelY = labelAbove ? py - 16 : py + 27;
+    const labelAnchor = waypoint.type === "Finish" ? "end" : "start";
+    const labelX = waypoint.type === "Finish" ? px - 12 : px + 12;
+    const fill =
+      waypoint.type === "Finish"
+        ? "#436f95"
+        : waypoint.type === "Start"
+          ? "#597642"
+          : waypoint.type === "Summit"
+            ? "#b76034"
+            : stageColor(markerStage);
+
+    return `
+      <g opacity="${dim ? "0.18" : "1"}">
+        <title>${escapeHtml(cleanPoiLabel(waypoint))} - km ${waypoint.routeKm.toFixed(1)}</title>
+        <line x1="${px.toFixed(1)}" x2="${px.toFixed(1)}" y1="${(py + 9).toFixed(1)}" y2="${labelAbove ? (labelY + 5).toFixed(1) : (labelY - 12).toFixed(1)}" stroke="rgba(47,38,28,0.28)" stroke-dasharray="2 5"/>
+        <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${waypoint.type === "Sleep" ? "8" : "7"}" fill="${fill}" stroke="#fff9ec" stroke-width="4"/>
+        <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="${waypoint.type === "Sleep" ? "8" : "7"}" fill="none" stroke="#2f261c" stroke-width="1.5"/>
+        <text x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="${labelAnchor}" class="map-label">${escapeHtml(cleanPoiLabel(waypoint))}</text>
+      </g>
+    `;
+  }
+
+  function renderRestMarker(event, x, y) {
+    const profilePoint = nearestProfilePoint(event.km);
+    const px = x(event.km);
+    const py = y(profilePoint[1]);
+    const dim = selectedProfileStage && selectedProfileStage !== event.stage;
+
+    return `
+      <g opacity="${dim ? "0.12" : "0.92"}">
+        <title>${escapeHtml(event.date)} rest - ${event.durationMin} min near ${event.near}</title>
+        <path d="M ${(px - 8).toFixed(1)} ${(py - 22).toFixed(1)} L ${(px + 8).toFixed(1)} ${(py - 22).toFixed(1)} L ${px.toFixed(1)} ${(py - 6).toFixed(1)} Z" fill="#2f261c"/>
+        <text x="${(px + 10).toFixed(1)}" y="${(py - 23).toFixed(1)}" class="profile-map-note">${Math.round(event.durationMin)}m rest</text>
+      </g>
+    `;
+  }
+
+  function renderProfileStageCard(stage) {
+    const active = selectedProfileStage === stage.day;
+    return `
+      <button type="button" class="profile-stage-card ${active ? "active" : ""}" data-stage="${stage.day}" style="--stage-color:${stage.color}">
+        <span>Day ${stage.day}</span>
+        <b>${escapeHtml(stage.from)} to ${escapeHtml(stage.to)}</b>
+        <small>${stage.distanceKm.toFixed(1)} km - +${fmt(stage.gainM)} m - ${escapeHtml(stage.badge)}</small>
+      </button>
     `;
   }
 

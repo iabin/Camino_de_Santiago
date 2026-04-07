@@ -395,7 +395,8 @@ h3 {
 .map-card {
   position: relative;
   overflow: hidden;
-  min-height: 650px;
+  min-height: 780px;
+  padding: 4.5rem 1rem 1rem;
   border: 1px solid var(--line);
   border-radius: 26px;
   background:
@@ -434,11 +435,13 @@ h3 {
 
 .route-fallback {
   display: none;
-  position: absolute;
-  inset: 4.5rem 1rem 1rem;
+  position: relative;
   z-index: 480;
-  align-items: center;
-  justify-content: center;
+  min-height: 680px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 1rem;
   padding: 1rem;
   border: 1px solid rgba(82, 55, 28, 0.22);
   border-radius: 22px;
@@ -455,17 +458,105 @@ h3 {
 
 .fallback-svg {
   width: 100%;
-  max-height: 560px;
+  height: auto;
   filter: drop-shadow(0 22px 40px rgba(78, 48, 20, 0.12));
 }
 
 .map-label {
   fill: var(--ink);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
   paint-order: stroke;
   stroke: rgba(255, 249, 236, 0.9);
   stroke-width: 4px;
+}
+
+.profile-map-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.profile-map-header h2 {
+  margin-bottom: 0;
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.profile-map-header p:last-child {
+  max-width: 340px;
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.profile-map-svg {
+  display: block;
+  overflow: visible;
+}
+
+.profile-map-title {
+  fill: var(--ink);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.profile-map-note {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.profile-stage-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.profile-stage-card {
+  min-height: 118px;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--stage-color), transparent 55%);
+  border-radius: 18px;
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--stage-color), transparent 88%), rgba(255, 249, 236, 0.78)),
+    var(--paper);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.profile-stage-card:hover,
+.profile-stage-card.active {
+  transform: translateY(-2px);
+  border-color: var(--stage-color);
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--stage-color), transparent 78%);
+}
+
+.profile-stage-card span,
+.profile-stage-card small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.profile-stage-card b {
+  display: block;
+  margin: 0.35rem 0;
+  font-size: 0.95rem;
+  line-height: 1.12;
+}
+
+.profile-stage-card small {
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
 }
 
 .route-notes {
@@ -889,6 +980,10 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .profile-stage-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .photo-empty-grid {
     grid-template-columns: 1fr;
   }
@@ -942,7 +1037,32 @@ h3 {
 
   .map-card,
   .map {
-    min-height: 520px;
+    min-height: 760px;
+  }
+
+  .map-card {
+    padding: 6.8rem 0.75rem 0.75rem;
+  }
+
+  .route-fallback {
+    min-height: 650px;
+    padding: 0.75rem;
+  }
+
+  .profile-map-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-stage-cards {
+    grid-template-columns: 1fr;
+    max-height: 210px;
+    overflow: auto;
+    padding-right: 0.25rem;
+  }
+
+  .profile-stage-card {
+    min-height: auto;
   }
 
   .photo-panel {
