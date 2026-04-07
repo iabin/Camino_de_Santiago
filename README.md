@@ -1,4 +1,6 @@
-Ve la ruta en
+Ve la ruta en https://iabin.github.io/Camino_de_Santiago/index.html
+
+
 CAMINO DE SANTIAGO — SARRIA → SANTIAGO DE COMPOSTELA
 Los últimos 125 km · 5 etapas · 4 noches · Abril 2026
 
