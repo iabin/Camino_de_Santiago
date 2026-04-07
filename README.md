@@ -1,6 +1,7 @@
+Ve la ruta en
 CAMINO DE SANTIAGO — SARRIA → SANTIAGO DE COMPOSTELA
 Los últimos 125 km · 5 etapas · 4 noches · Abril 2026
-Caminado con Nikole.
+
 
 ═══════════════════════════════════════
 RESUMEN DE RUTA
